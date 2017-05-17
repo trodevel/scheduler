@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 6972 $ $Date:: 2017-05-15 #$ $Author: serge $
+// $Revision: 6982 $ $Date:: 2017-05-16 #$ $Author: serge $
 
 #ifndef SCHEDULER_I_SCHEDULER_H
 #define SCHEDULER_I_SCHEDULER_H
@@ -35,9 +35,9 @@ class IScheduler
 public:
     virtual ~IScheduler() {};
 
-    virtual bool insert_job( job_id_t * job_id, std::string * error, IJob * job, const Time & exec_time )   = 0;
-    virtual bool modify_job( std::string * error, job_id_t job_id, const Time & exec_time )                 = 0;
-    virtual bool delete_job( std::string * error, job_id_t job_id )                                         = 0;
+    virtual bool insert_job( job_id_t * job_id, std::string * error, IJob * job )           = 0;
+    virtual bool modify_job( std::string * error, job_id_t job_id, const Time & exec_time ) = 0;
+    virtual bool delete_job( std::string * error, job_id_t job_id )                         = 0;
 };
 
 } //namespace scheduler
