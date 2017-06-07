@@ -19,12 +19,15 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 7004 $ $Date:: 2017-05-16 #$ $Author: serge $
+// $Revision: 7012 $ $Date:: 2017-06-06 #$ $Author: serge $
 
 #ifndef SCHEDULER_SCHEDULER_H
 #define SCHEDULER_SCHEDULER_H
 
 #include "i_scheduler.h"    // IScheduler
+
+#include <atomic>           // std::atomic
+#include <thread>           // std::thread
 
 namespace scheduler
 {
@@ -54,6 +57,10 @@ private:
 
     void thread_func();
 
+    void iterate( const Time & curr_time );
+    void execute_job_ids( const VectJobId & job_ids );
+    void execute_job_id( job_id_t job_id );
+
     static job_id_t get_next_job_id();
 
     IJob * find_job( job_id_t job_id );
@@ -69,6 +76,9 @@ private:
     mutable std::mutex      mutex_;
 
     Duration                granularity_;
+
+    std::atomic<bool>       should_run_;
+    std::thread             thread_;
 
     bool                    has_next_exec_time_;
     Time                    next_exec_time_;

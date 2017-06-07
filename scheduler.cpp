@@ -19,9 +19,11 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 7004 $ $Date:: 2017-05-16 #$ $Author: serge $
+// $Revision: 7013 $ $Date:: 2017-06-06 #$ $Author: serge $
 
 #include "scheduler.h"      // self
+
+#include <functional>               // std::bind
 
 #include "utils/mutex_helper.h"     // MUTEX_SCOPE_LOCK
 #include "utils/dummy_logger.h"     // dummy_log
@@ -33,8 +35,29 @@ namespace scheduler
 Scheduler::Scheduler(
         const Duration & granularity ):
         granularity_( granularity ),
+        should_run_( false ),
         has_next_exec_time_( false )
 {
+}
+
+void Scheduler::run()
+{
+    if( should_run_ == false )
+    {
+        should_run_ = true;
+
+        thread_ = std::thread( std::bind( &Scheduler::thread_func, this ) );
+    }
+}
+
+void Scheduler::shutdown()
+{
+    if( should_run_ )
+    {
+        should_run_ = false;
+
+        thread_.join();
+    }
 }
 
 void Scheduler::thread_func()
@@ -43,14 +66,71 @@ void Scheduler::thread_func()
 
 //    dummy_log_info( MODULENAME, "thread_func: started" );
 
-    bool should_run    = true;
-    while( should_run )
+    while( should_run_ )
     {
+        current_time_ = std::chrono::system_clock::now();
+
+        iterate( current_time_ );
+
+        THIS_THREAD_SLEEP( granularity_ );
     }
 
 //    dummy_log_info( MODULENAME, "thread_func: ended" );
 }
 
+void Scheduler::iterate( const Time & curr_time )
+{
+    if( has_next_exec_time_ == false || curr_time < next_exec_time_ )
+        return;
+
+    if( curr_time >= next_exec_time_ )
+    {
+        if( events_.empty() )
+        {
+            throw std::logic_error( "event list is empty" );
+        }
+
+        auto it = events_.begin();
+
+        if( it->first !=  next_exec_time_ )
+        {
+            throw std::logic_error( "time of first event doesn't match next_exec_time_" );
+        }
+
+        auto & job_ids = it->second;
+
+        execute_job_ids( job_ids );
+
+        events_.erase( it );
+
+        if( events_.empty() )
+        {
+            has_next_exec_time_  = false;
+        }
+        else
+        {
+            next_exec_time_ = events_.begin()->first;
+        }
+    }
+}
+
+void Scheduler::execute_job_ids( const VectJobId & job_ids )
+{
+    for( auto & job_id : job_ids )
+    {
+        execute_job_id( job_id );
+    }
+}
+
+void Scheduler::execute_job_id( job_id_t job_id )
+{
+    auto job = find_job( job_id );
+
+    if( job == nullptr )
+        return;
+
+    job->invoke();
+}
 
 bool Scheduler::insert_job( job_id_t * job_id, std::string * error, IJob * job )
 {
