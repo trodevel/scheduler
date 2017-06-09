@@ -19,10 +19,12 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 6980 $ $Date:: 2017-05-15 #$ $Author: serge $
+// $Revision: 7029 $ $Date:: 2017-06-09 #$ $Author: serge $
 
 #ifndef SCHEDULER_ONE_TIME_JOB_H
 #define SCHEDULER_ONE_TIME_JOB_H
+
+#include "job.h"            // Job
 
 namespace scheduler
 {
@@ -53,9 +55,9 @@ public:
         return false;
     }
 
-    virtual const Duration & get_period()
+    virtual const Duration & get_period() const
     {
-        static const Duration dummy;
+        static const Duration dummy( std::chrono::seconds( 0 ) );
 
         return dummy;
     }

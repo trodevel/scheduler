@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 7020 $ $Date:: 2017-06-08 #$ $Author: serge $
+// $Revision: 7023 $ $Date:: 2017-06-09 #$ $Author: serge $
 
 #include "scheduler.h"      // self
 
@@ -319,10 +319,7 @@ Time Scheduler::get_now()
 {
     auto now = std::chrono::system_clock::now();
 
-    //auto now_ms = std::chrono::time_point_cast<std::chrono::milliseconds>(now);
-    auto now_ms = std::chrono::time_point_cast<Time::clock>(now);
-
-    return now_ms;
+    return now;
 }
 
 } //namespace scheduler

@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 7015 $ $Date:: 2017-06-08 #$ $Author: serge $
+// $Revision: 7022 $ $Date:: 2017-06-09 #$ $Author: serge $
 
 #ifndef SCHEDULER_TIME_H
 #define SCHEDULER_TIME_H
@@ -29,7 +29,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 namespace scheduler
 {
 
-typedef std::chrono::time_point<std::chrono::microseconds> Time;
+typedef std::chrono::time_point<std::chrono::system_clock> Time;
 
 } //namespace scheduler
 
