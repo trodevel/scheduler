@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 7012 $ $Date:: 2017-06-06 #$ $Author: serge $
+// $Revision: 7020 $ $Date:: 2017-06-08 #$ $Author: serge $
 
 #ifndef SCHEDULER_SCHEDULER_H
 #define SCHEDULER_SCHEDULER_H
@@ -28,6 +28,9 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #include <atomic>           // std::atomic
 #include <thread>           // std::thread
+#include <mutex>            // std::mutex
+#include <map>              // std::map
+#include <vector>           // std::vector
 
 namespace scheduler
 {
@@ -70,6 +73,8 @@ private:
     void reschedule_job_to_time( job_id_t job_id, const Time & old_exec_time, const Time & new_exec_time );
     void correct_next_exec_time_after_insertion( const Time & exec_time );
     void correct_next_exec_time_after_deletion( const Time & exec_time );
+
+    static Time get_now();
 
 private:
 

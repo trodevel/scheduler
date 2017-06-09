@@ -19,16 +19,17 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 7013 $ $Date:: 2017-06-06 #$ $Author: serge $
+// $Revision: 7020 $ $Date:: 2017-06-08 #$ $Author: serge $
 
 #include "scheduler.h"      // self
 
 #include <functional>               // std::bind
+#include <algorithm>                // std::find
 
 #include "utils/mutex_helper.h"     // MUTEX_SCOPE_LOCK
 #include "utils/dummy_logger.h"     // dummy_log
 #include "utils/assert.h"           // ASSERT
-
+#include "utils/set_this_thread_name.h"     // set_this_thread_name()
 
 namespace scheduler
 {
@@ -68,7 +69,7 @@ void Scheduler::thread_func()
 
     while( should_run_ )
     {
-        current_time_ = std::chrono::system_clock::now();
+        current_time_ = get_now();
 
         iterate( current_time_ );
 
@@ -146,7 +147,7 @@ bool Scheduler::insert_job( job_id_t * job_id, std::string * error, IJob * job )
 
     * job_id = get_next_job_id();
 
-    auto b = map_id_to_job_.insert( std::make_pair( * job_id, job ) );
+    auto b = map_id_to_job_.insert( std::make_pair( * job_id, job ) ).second;
 
     ASSERT( b ); (void)b;
 
@@ -197,6 +198,8 @@ bool Scheduler::delete_job( std::string * error, job_id_t job_id )
     auto exec_time = job->get_exec_time();
 
     delete_job_at_time( job_id, exec_time );
+
+    return true;
 }
 
 IJob * Scheduler::find_job( job_id_t job_id )
@@ -310,6 +313,16 @@ job_id_t Scheduler::get_next_job_id()
     static job_id_t job_id = 0;
 
     return ++job_id;
+}
+
+Time Scheduler::get_now()
+{
+    auto now = std::chrono::system_clock::now();
+
+    //auto now_ms = std::chrono::time_point_cast<std::chrono::milliseconds>(now);
+    auto now_ms = std::chrono::time_point_cast<Time::clock>(now);
+
+    return now_ms;
 }
 
 } //namespace scheduler

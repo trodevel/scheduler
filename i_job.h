@@ -19,12 +19,12 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 6980 $ $Date:: 2017-05-15 #$ $Author: serge $
+// $Revision: 7015 $ $Date:: 2017-06-08 #$ $Author: serge $
 
 #ifndef SCHEDULER_I_JOB_H
 #define SCHEDULER_I_JOB_H
 
-#include "time.h"       // Time
+#include "my_time.h"    // Time
 #include "duration.h"   // Duration
 
 namespace scheduler

@@ -19,13 +19,16 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 6982 $ $Date:: 2017-05-16 #$ $Author: serge $
+// $Revision: 7016 $ $Date:: 2017-06-08 #$ $Author: serge $
 
 #ifndef SCHEDULER_I_SCHEDULER_H
 #define SCHEDULER_I_SCHEDULER_H
 
+#include <string>
+
 #include "i_job.h"      // IJob
-#include "time.h"       // Time
+#include "my_time.h"    // Time
+#include "job_id_t.h"   // job_id_t
 
 namespace scheduler
 {
