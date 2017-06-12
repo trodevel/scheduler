@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 7020 $ $Date:: 2017-06-08 #$ $Author: serge $
+// $Revision: 7052 $ $Date:: 2017-06-12 #$ $Author: serge $
 
 #ifndef SCHEDULER_SCHEDULER_H
 #define SCHEDULER_SCHEDULER_H
@@ -61,13 +61,15 @@ private:
     void thread_func();
 
     void iterate( const Time & curr_time );
-    void execute_job_ids( const VectJobId & job_ids );
-    void execute_job_id( job_id_t job_id );
+    void execute_job_ids( const Time & exec_time, const VectJobId & job_ids );
+    void execute_job_id( const Time & exec_time, job_id_t job_id );
 
     static job_id_t get_next_job_id();
 
     IJob * find_job( job_id_t job_id );
-    bool is_valid( const Time & exec_time );
+    void delete_job( job_id_t job_id );
+    bool is_valid( std::string * error, const IJob & job );
+    bool is_time_valid( const Time & exec_time );
     void delete_job_at_time( job_id_t job_id, const Time & exec_time );
     void schedule_job_to_time( job_id_t job_id, const Time & exec_time );
     void reschedule_job_to_time( job_id_t job_id, const Time & old_exec_time, const Time & new_exec_time );

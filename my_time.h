@@ -19,17 +19,19 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 7022 $ $Date:: 2017-06-09 #$ $Author: serge $
+// $Revision: 7046 $ $Date:: 2017-06-12 #$ $Author: serge $
 
 #ifndef SCHEDULER_TIME_H
 #define SCHEDULER_TIME_H
 
 #include <chrono>       // std::chrono
 
+#include "duration.h"   // Duration
+
 namespace scheduler
 {
 
-typedef std::chrono::time_point<std::chrono::system_clock> Time;
+typedef std::chrono::time_point<std::chrono::system_clock, Duration> Time;
 
 } //namespace scheduler
 

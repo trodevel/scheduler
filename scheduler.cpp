@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 7023 $ $Date:: 2017-06-09 #$ $Author: serge $
+// $Revision: 7052 $ $Date:: 2017-06-12 #$ $Author: serge $
 
 #include "scheduler.h"      // self
 
@@ -100,7 +100,7 @@ void Scheduler::iterate( const Time & curr_time )
 
         auto & job_ids = it->second;
 
-        execute_job_ids( job_ids );
+        execute_job_ids( next_exec_time_, job_ids );
 
         events_.erase( it );
 
@@ -115,15 +115,15 @@ void Scheduler::iterate( const Time & curr_time )
     }
 }
 
-void Scheduler::execute_job_ids( const VectJobId & job_ids )
+void Scheduler::execute_job_ids( const Time & exec_time, const VectJobId & job_ids )
 {
     for( auto & job_id : job_ids )
     {
-        execute_job_id( job_id );
+        execute_job_id( exec_time, job_id );
     }
 }
 
-void Scheduler::execute_job_id( job_id_t job_id )
+void Scheduler::execute_job_id( const Time & exec_time, job_id_t job_id )
 {
     auto job = find_job( job_id );
 
@@ -131,17 +131,25 @@ void Scheduler::execute_job_id( job_id_t job_id )
         return;
 
     job->invoke();
+
+    if( job->is_periodic() )
+    {
+        auto new_exec_time = exec_time + job->get_period();
+
+        schedule_job_to_time( job_id, new_exec_time );
+    }
+    else
+    {
+        delete_job( job_id );
+    }
 }
 
 bool Scheduler::insert_job( job_id_t * job_id, std::string * error, IJob * job )
 {
     MUTEX_SCOPE_LOCK( mutex_ );
 
-    auto exec_time = job->get_exec_time();
-
-    if( is_valid( exec_time ) == false )
+    if( is_valid( error, * job ) == false )
     {
-        * error = "exec_time lies in the past";
         return false;
     }
 
@@ -150,6 +158,8 @@ bool Scheduler::insert_job( job_id_t * job_id, std::string * error, IJob * job )
     auto b = map_id_to_job_.insert( std::make_pair( * job_id, job ) ).second;
 
     ASSERT( b ); (void)b;
+
+    auto exec_time = job->get_exec_time();
 
     schedule_job_to_time( * job_id, exec_time );
 
@@ -160,7 +170,7 @@ bool Scheduler::modify_job( std::string * error, job_id_t job_id, const Time & e
 {
     MUTEX_SCOPE_LOCK( mutex_ );
 
-    if( is_valid( exec_time ) == false )
+    if( is_time_valid( exec_time ) == false )
     {
         * error = "new exec_time lies in the past";
         return false;
@@ -214,7 +224,36 @@ IJob * Scheduler::find_job( job_id_t job_id )
     return it->second;
 }
 
-bool Scheduler::is_valid( const Time & exec_time )
+void Scheduler::delete_job( job_id_t job_id )
+{
+    auto it = map_id_to_job_.find( job_id );
+
+    if( it != map_id_to_job_.end() )
+    {
+        map_id_to_job_.erase( it );
+    }
+}
+
+bool Scheduler::is_valid( std::string * error, const IJob & job )
+{
+    auto & exec_time = job.get_exec_time();
+
+    if( is_time_valid( exec_time ) == false )
+    {
+        * error = "exec_time lies in the past";
+        return false;
+    }
+
+    if( job.is_periodic() && job.get_period() < granularity_ )
+    {
+        * error = "period is less than scheduler's granularity";
+        return false;
+    }
+
+    return true;
+}
+
+bool Scheduler::is_time_valid( const Time & exec_time )
 {
     if( exec_time < ( current_time_ + granularity_ ) )
     {

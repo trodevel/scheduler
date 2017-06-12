@@ -1,6 +1,6 @@
 /*
 
-Scheduler - OneTimeJob Aux.
+Scheduler - PeriodicJob Aux.
 
 Copyright (C) 2017 Sergey Kolevatov
 
@@ -19,42 +19,45 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 7041 $ $Date:: 2017-06-12 #$ $Author: serge $
+// $Revision: 7042 $ $Date:: 2017-06-12 #$ $Author: serge $
 
-#ifndef SCHEDULER_ONE_TIME_JOB_AUX_H
-#define SCHEDULER_ONE_TIME_JOB_AUX_H
+#ifndef SCHEDULER_PERIODIC_JOB_AUX_H
+#define SCHEDULER_PERIODIC_JOB_AUX_H
 
-#include "onetime_job.h"                // OneTimeJob
+#include "periodic_job.h"       // PeriodicJob
 
 namespace scheduler
 {
 
 template< class CLOSURE >
-inline OneTimeJob<CLOSURE> *create_one_time_job( const std::string & descr, const Time & exec_time, const CLOSURE & closure )
+inline PeriodicJob<CLOSURE> *create_periodic_job( const std::string & descr, const Time & exec_time, const Duration & period, const CLOSURE & closure )
 {
-    return new OneTimeJob<CLOSURE>( descr, exec_time, closure );
+    return new PeriodicJob<CLOSURE>( descr, exec_time, period, closure );
 }
 
 template< class CLOSURE >
-inline OneTimeJob<CLOSURE> *create_one_time_job( const std::string & descr, uint32_t exec_time_epoch_sec, const CLOSURE & closure )
+inline PeriodicJob<CLOSURE> *create_periodic_job( const std::string & descr, uint32_t exec_time_epoch_sec, uint32_t period_sec, const CLOSURE & closure )
 {
     auto epoch          = Time();
     auto since_epoch    = std::chrono::seconds( exec_time_epoch_sec );
     auto exec_time      = epoch + since_epoch;
 
-    return create_one_time_job( descr, exec_time, closure );
+    auto period         = std::chrono::seconds( period_sec );
+
+    return create_periodic_job( descr, exec_time, period, closure );
 }
 
 template< class CLOSURE >
-inline bool create_and_insert_one_time_job(
+inline bool create_and_insert_periodic_job(
         job_id_t            * job_id,
         std::string         * error_msg,
         IScheduler          & sched,
         const std::string   & descr,
         const Time          & exec_time,
+        const Duration      & period,
         const CLOSURE       & closure )
 {
-    auto job = create_one_time_job( descr, exec_time, closure );
+    auto job = create_periodic_job( descr, exec_time, period, closure );
 
     auto res = sched.insert_job( job_id, error_msg, job );
 
@@ -67,15 +70,16 @@ inline bool create_and_insert_one_time_job(
 }
 
 template< class CLOSURE >
-inline bool create_and_insert_one_time_job(
+inline bool create_and_insert_periodic_job(
         job_id_t            * job_id,
         std::string         * error_msg,
         IScheduler          & sched,
         const std::string   & descr,
         uint32_t            exec_time_epoch_sec,
+        uint32_t            period_sec,
         const CLOSURE       & closure )
 {
-    auto job = create_one_time_job( descr, exec_time_epoch_sec, closure );
+    auto job = create_periodic_job( descr, exec_time_epoch_sec, period_sec, closure );
 
     auto res = sched.insert_job( job_id, error_msg, job );
 
@@ -89,4 +93,4 @@ inline bool create_and_insert_one_time_job(
 
 } // namespace scheduler
 
-#endif // SCHEDULER_ONE_TIME_JOB_AUX_H
+#endif // SCHEDULER_PERIODIC_JOB_AUX_H

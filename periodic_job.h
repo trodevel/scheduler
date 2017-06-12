@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 6980 $ $Date:: 2017-05-15 #$ $Author: serge $
+// $Revision: 7050 $ $Date:: 2017-06-12 #$ $Author: serge $
 
 #ifndef SCHEDULER_PERIODIC_JOB_H
 #define SCHEDULER_PERIODIC_JOB_H
@@ -38,7 +38,8 @@ public:
             const Duration      & period,
             const CLOSURE       & closure ) :
             Job( descr, exec_time ),
-            closure_( closure )
+            closure_( closure ),
+            period_( period )
     {
     }
 
@@ -54,7 +55,7 @@ public:
         return true;
     }
 
-    virtual const Duration & get_period()
+    virtual const Duration & get_period() const
     {
         return period_;
     }
