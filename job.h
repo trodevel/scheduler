@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 7015 $ $Date:: 2017-06-08 #$ $Author: serge $
+// $Revision: 7062 $ $Date:: 2017-06-13 #$ $Author: serge $
 
 #ifndef SCHEDULER_JOB_H
 #define SCHEDULER_JOB_H

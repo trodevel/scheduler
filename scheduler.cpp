@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 7052 $ $Date:: 2017-06-12 #$ $Author: serge $
+// $Revision: 7062 $ $Date:: 2017-06-13 #$ $Author: serge $
 
 #include "scheduler.h"      // self
 
@@ -132,9 +132,16 @@ void Scheduler::execute_job_id( const Time & exec_time, job_id_t job_id )
 
     job->invoke();
 
-    if( job->is_periodic() )
+    post_invoke( exec_time, job_id, * job );
+}
+
+void Scheduler::post_invoke( const Time & exec_time, job_id_t job_id, IJob & job )
+{
+    if( job.is_periodic() )
     {
-        auto new_exec_time = exec_time + job->get_period();
+        auto new_exec_time = exec_time + job.get_period();
+
+        job.set_exec_time( new_exec_time );
 
         schedule_job_to_time( job_id, new_exec_time );
     }

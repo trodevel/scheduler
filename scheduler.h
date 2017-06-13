@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 7052 $ $Date:: 2017-06-12 #$ $Author: serge $
+// $Revision: 7062 $ $Date:: 2017-06-13 #$ $Author: serge $
 
 #ifndef SCHEDULER_SCHEDULER_H
 #define SCHEDULER_SCHEDULER_H
@@ -63,6 +63,8 @@ private:
     void iterate( const Time & curr_time );
     void execute_job_ids( const Time & exec_time, const VectJobId & job_ids );
     void execute_job_id( const Time & exec_time, job_id_t job_id );
+
+    void post_invoke( const Time & exec_time, job_id_t job_id, IJob & job );
 
     static job_id_t get_next_job_id();
 

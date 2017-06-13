@@ -4,7 +4,7 @@
 #include <iostream>         // std::cout
 #include <functional>       // std::bind
 
-#include "utils/mutex_helper.h" // MUTEX_SCOPE_LOCK
+#include "utils/mutex_helper.h" // THIS_THREAD_SLEEP_SEC
 
 #include "scheduler.h"          // Scheduler
 #include "onetime_job_aux.h"    // create_and_insert_one_time_job
@@ -28,11 +28,11 @@ void task_s( const std::string & descr )
     std::cout << os.str();
 }
 
-void task_inc( const std::string & descr, uint32_t & val )
+void task_inc( const std::string & descr, uint32_t * val )
 {
     std::ostringstream os;
 
-    os << "task: " << descr << ", val " << ++val << "\n";
+    os << "task: " << descr << ", val " << ++(*val) << "\n";
 
     std::cout << os.str();
 }
@@ -116,7 +116,7 @@ void test_04( scheduler::IScheduler & sched )
 
     uint32_t val = 0;
 
-    scheduler::create_and_insert_one_time_job( & job_id, & error_msg, sched, "test_job", exec_time, std::bind( & task_inc, "fire", val ) );
+    scheduler::create_and_insert_one_time_job( & job_id, & error_msg, sched, "test_job", exec_time, std::bind( & task_inc, "fire", & val ) );
 
     sched.delete_job( & error_msg, job_id );
 
@@ -231,7 +231,7 @@ void test_08( scheduler::IScheduler & sched )
 
     uint32_t val = 0;
 
-    auto res = scheduler::create_and_insert_periodic_job( & job_id, & error_msg, sched, "test_job", exec_time, period, std::bind( & task_inc, "fire", val ) );
+    auto res = scheduler::create_and_insert_periodic_job( & job_id, & error_msg, sched, "test_job", exec_time, period, std::bind( & task_inc, "fire", & val ) );
 
     if( res == false )
     {
@@ -250,6 +250,162 @@ void test_08( scheduler::IScheduler & sched )
     {
         std::cout << "OK: all jobs fired" << std::endl;
     }
+
+    sched.delete_job( & error_msg, job_id );
+
+    std::cout << name << ": done" << std::endl;
+}
+
+void test_09( scheduler::IScheduler & sched )
+{
+    std::string name( "test_09" );
+
+    std::cout << name << ": sleep 10 sec, fire in 3 sec every second, delete task in 5 sec" << std::endl;
+
+    auto now = std::chrono::system_clock::now();
+
+    scheduler::Time exec_time = now + std::chrono::seconds( 3 );
+    scheduler::Duration period = std::chrono::seconds( 1 );
+
+    scheduler::job_id_t job_id;
+    std::string error_msg;
+
+    uint32_t val = 0;
+
+    auto res = scheduler::create_and_insert_periodic_job( & job_id, & error_msg, sched, "test_job", exec_time, period, std::bind( & task_inc, "fire", & val ) );
+
+    if( res == false )
+    {
+        std::cout << "ERROR: cannot create periodic job: " << error_msg << std::endl;
+
+        return;
+    }
+
+    THIS_THREAD_SLEEP_SEC( 5 );
+
+    res = sched.delete_job( & error_msg, job_id );
+
+    if( res == false )
+    {
+        std::cout << "ERROR: cannot delete job: " << error_msg << std::endl;
+
+        return;
+    }
+
+    THIS_THREAD_SLEEP_SEC( 5 );
+
+    if( val != 2 )
+    {
+        std::cout << "ERROR: not all jobs fired: val = " << val << std::endl;
+    }
+    else
+    {
+        std::cout << "OK: all jobs fired" << std::endl;
+    }
+
+    std::cout << name << ": done" << std::endl;
+}
+
+void test_10( scheduler::IScheduler & sched )
+{
+    std::string name( "test_10" );
+
+    std::cout << name << ": sleep 10 sec, fire in 3 sec every second, postpone start to 5 sec" << std::endl;
+
+    auto now = std::chrono::system_clock::now();
+
+    scheduler::Time exec_time_1 = now + std::chrono::seconds( 3 );
+    scheduler::Time exec_time_2 = now + std::chrono::seconds( 5 );
+    scheduler::Duration period = std::chrono::seconds( 1 );
+
+    scheduler::job_id_t job_id;
+    std::string error_msg;
+
+    uint32_t val = 0;
+
+    auto res = scheduler::create_and_insert_periodic_job( & job_id, & error_msg, sched, "test_job", exec_time_1, period, std::bind( & task_inc, "fire", & val ) );
+
+    if( res == false )
+    {
+        std::cout << "ERROR: cannot create periodic job: " << error_msg << std::endl;
+
+        return;
+    }
+
+    res = sched.modify_job( & error_msg, job_id, exec_time_2 );
+
+    if( res == false )
+    {
+        std::cout << "ERROR: cannot modify job: " << error_msg << std::endl;
+
+        return;
+    }
+
+    THIS_THREAD_SLEEP_SEC( 10 );
+
+    if( val != 5 )
+    {
+        std::cout << "ERROR: not all jobs fired: val = " << val << std::endl;
+    }
+    else
+    {
+        std::cout << "OK: all jobs fired" << std::endl;
+    }
+
+    sched.delete_job( & error_msg, job_id );
+
+    std::cout << name << ": done" << std::endl;
+}
+
+void test_11( scheduler::IScheduler & sched )
+{
+    std::string name( "test_11" );
+
+    std::cout << name << ": sleep 10 sec, fire in 3 sec every second, in 5 sec postpone next fire to 7 sec" << std::endl;
+
+    auto now = std::chrono::system_clock::now();
+
+    scheduler::Time exec_time_1 = now + std::chrono::seconds( 3 );
+    scheduler::Time exec_time_2 = now + std::chrono::seconds( 7 );
+    scheduler::Duration period = std::chrono::seconds( 1 );
+
+    scheduler::job_id_t job_id;
+    std::string error_msg;
+
+    uint32_t val = 0;
+
+    auto res = scheduler::create_and_insert_periodic_job( & job_id, & error_msg, sched, "test_job", exec_time_1, period, std::bind( & task_inc, "fire", & val ) );
+
+    if( res == false )
+    {
+        std::cout << "ERROR: cannot create periodic job: " << error_msg << std::endl;
+
+        return;
+    }
+
+    THIS_THREAD_SLEEP_SEC( 5 );
+
+    res = sched.modify_job( & error_msg, job_id, exec_time_2 );
+
+    if( res == false )
+    {
+        std::cout << "ERROR: cannot modify job: " << error_msg << std::endl;
+
+        return;
+    }
+
+    THIS_THREAD_SLEEP_SEC( 5 );
+
+    if( val != 5 )
+    {
+        std::cout << "ERROR: not all jobs fired: val = " << val << std::endl;
+    }
+    else
+    {
+        std::cout << "OK: all jobs fired" << std::endl;
+    }
+
+    sched.delete_job( & error_msg, job_id );
 
     std::cout << name << ": done" << std::endl;
 }
@@ -270,6 +426,9 @@ int main()
     test_06( sched );
     test_07( sched );
     test_08( sched );
+    test_09( sched );
+    test_10( sched );
+    test_11( sched );
 
     sched.shutdown();
 
