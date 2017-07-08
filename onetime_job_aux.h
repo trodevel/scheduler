@@ -19,12 +19,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 7062 $ $Date:: 2017-06-13 #$ $Author: serge $
+// $Revision: 7106 $ $Date:: 2017-07-07 #$ $Author: serge $
 
 #ifndef SCHEDULER_ONE_TIME_JOB_AUX_H
 #define SCHEDULER_ONE_TIME_JOB_AUX_H
 
 #include "onetime_job.h"                // OneTimeJob
+#include "time_convert.h"               // epoch_sec_to_time
 
 namespace scheduler
 {
@@ -38,9 +39,7 @@ inline OneTimeJob<CLOSURE> *create_one_time_job( const std::string & descr, cons
 template< class CLOSURE >
 inline OneTimeJob<CLOSURE> *create_one_time_job( const std::string & descr, uint32_t exec_time_epoch_sec, const CLOSURE & closure )
 {
-    auto epoch          = Time();
-    auto since_epoch    = std::chrono::seconds( exec_time_epoch_sec );
-    auto exec_time      = epoch + since_epoch;
+    auto exec_time      = epoch_sec_to_time( exec_time_epoch_sec );
 
     return create_one_time_job( descr, exec_time, closure );
 }

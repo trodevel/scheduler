@@ -19,12 +19,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 7069 $ $Date:: 2017-07-03 #$ $Author: serge $
+// $Revision: 7106 $ $Date:: 2017-07-07 #$ $Author: serge $
 
 #ifndef SCHEDULER_TIMEOUT_JOB_AUX_H
 #define SCHEDULER_TIMEOUT_JOB_AUX_H
 
 #include "onetime_job_aux.h"        // create_one_time_job
+#include "time_convert.h"           // get_now()
 
 namespace scheduler
 {
@@ -32,7 +33,7 @@ namespace scheduler
 template< class CLOSURE >
 inline OneTimeJob<CLOSURE> *create_timeout_job( const std::string & descr, const Duration & timeout, const CLOSURE & closure )
 {
-    auto now        = std::chrono::system_clock::now();
+    auto now        = get_now();
     Time exec_time  = now + timeout;
 
     return create_one_time_job( descr, exec_time, closure );
