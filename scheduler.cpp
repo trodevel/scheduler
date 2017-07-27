@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 7062 $ $Date:: 2017-06-13 #$ $Author: serge $
+// $Revision: 7441 $ $Date:: 2017-07-27 #$ $Author: serge $
 
 #include "scheduler.h"      // self
 
@@ -81,6 +81,17 @@ void Scheduler::thread_func()
 
 void Scheduler::iterate( const Time & curr_time )
 {
+    VectJob jobs;
+
+    iterate_and_collect( & jobs, curr_time );
+
+    invoke_jobs( jobs );
+}
+
+void Scheduler::iterate_and_collect( VectJob * jobs, const Time & curr_time )
+{
+    MUTEX_SCOPE_LOCK( mutex_ );
+
     if( has_next_exec_time_ == false || curr_time < next_exec_time_ )
         return;
 
@@ -100,7 +111,7 @@ void Scheduler::iterate( const Time & curr_time )
 
         auto & job_ids = it->second;
 
-        execute_job_ids( next_exec_time_, job_ids );
+        collect_and_postprocess_jobs( jobs, next_exec_time_, job_ids );
 
         events_.erase( it );
 
@@ -115,22 +126,22 @@ void Scheduler::iterate( const Time & curr_time )
     }
 }
 
-void Scheduler::execute_job_ids( const Time & exec_time, const VectJobId & job_ids )
+void Scheduler::collect_and_postprocess_jobs( VectJob * jobs, const Time & exec_time, const VectJobId & job_ids )
 {
     for( auto & job_id : job_ids )
     {
-        execute_job_id( exec_time, job_id );
+        collect_and_postprocess_job( jobs, exec_time, job_id );
     }
 }
 
-void Scheduler::execute_job_id( const Time & exec_time, job_id_t job_id )
+void Scheduler::collect_and_postprocess_job( VectJob * jobs, const Time & exec_time, job_id_t job_id )
 {
     auto job = find_job( job_id );
 
     if( job == nullptr )
         return;
 
-    job->invoke();
+    jobs->push_back( job );
 
     post_invoke( exec_time, job_id, * job );
 }
@@ -148,6 +159,14 @@ void Scheduler::post_invoke( const Time & exec_time, job_id_t job_id, IJob & job
     else
     {
         delete_job( job_id );
+    }
+}
+
+void Scheduler::invoke_jobs( VectJob & jobs )
+{
+    for( auto & e : jobs )
+    {
+        e->invoke();
     }
 }
 

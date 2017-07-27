@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 7117 $ $Date:: 2017-07-07 #$ $Author: serge $
+// $Revision: 7155 $ $Date:: 2017-07-11 #$ $Author: serge $
 
 #ifndef SCHEDULER_TIME_CONVERT_H
 #define SCHEDULER_TIME_CONVERT_H

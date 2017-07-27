@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 7062 $ $Date:: 2017-06-13 #$ $Author: serge $
+// $Revision: 7441 $ $Date:: 2017-07-27 #$ $Author: serge $
 
 #ifndef SCHEDULER_SCHEDULER_H
 #define SCHEDULER_SCHEDULER_H
@@ -56,13 +56,18 @@ private:
     typedef std::vector<job_id_t>               VectJobId;
     typedef std::map<Time, VectJobId>           MapTimeToVectJobId;
 
+    typedef std::vector<IJob*>                  VectJob;
+
 private:
 
     void thread_func();
 
     void iterate( const Time & curr_time );
-    void execute_job_ids( const Time & exec_time, const VectJobId & job_ids );
-    void execute_job_id( const Time & exec_time, job_id_t job_id );
+    void iterate_and_collect( VectJob * jobs, const Time & curr_time );
+    void collect_and_postprocess_jobs( VectJob * jobs, const Time & exec_time, const VectJobId & job_ids );
+    void collect_and_postprocess_job( VectJob * jobs, const Time & exec_time, job_id_t job_id );
+
+    void invoke_jobs( VectJob & jobs );
 
     void post_invoke( const Time & exec_time, job_id_t job_id, IJob & job );
 
