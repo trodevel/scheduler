@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 7441 $ $Date:: 2017-07-27 #$ $Author: serge $
+// $Revision: 9543 $ $Date:: 2018-07-18 #$ $Author: serge $
 
 #ifndef SCHEDULER_SCHEDULER_H
 #define SCHEDULER_SCHEDULER_H
@@ -40,6 +40,8 @@ class Scheduler: public IScheduler
 public:
     Scheduler(
             const Duration & granularity );
+
+    bool init_log( unsigned int log_id );
 
     virtual ~Scheduler() {};
 
@@ -88,6 +90,8 @@ private:
 private:
 
     mutable std::mutex      mutex_;
+
+    uint32_t                log_id_;
 
     Duration                granularity_;
 

@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 7155 $ $Date:: 2017-07-11 #$ $Author: serge $
+// $Revision: 9544 $ $Date:: 2018-07-18 #$ $Author: serge $
 
 #ifndef SCHEDULER_TIME_CONVERT_H
 #define SCHEDULER_TIME_CONVERT_H
@@ -44,6 +44,19 @@ inline Time epoch_sec_to_time( uint32_t since_epoch_sec )
     auto res            = epoch + since_epoch;
 
     return res;
+}
+
+inline uint64_t to_epoch_microsec( const Time & tp )
+{
+    auto tp_casted = std::chrono::time_point_cast<std::chrono::microseconds>( tp );
+
+    auto epoch = tp_casted.time_since_epoch();
+
+    auto value = std::chrono::duration_cast<std::chrono::microseconds>( epoch );
+
+    uint64_t duration = value.count();
+
+    return duration;
 }
 
 } //namespace scheduler

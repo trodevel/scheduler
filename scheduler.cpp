@@ -19,12 +19,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 7441 $ $Date:: 2017-07-27 #$ $Author: serge $
+// $Revision: 9562 $ $Date:: 2018-07-18 #$ $Author: serge $
 
 #include "scheduler.h"      // self
 
 #include <functional>               // std::bind
 #include <algorithm>                // std::find
+
+#include "str_helper.h"             // to_string()
 
 #include "utils/mutex_helper.h"     // MUTEX_SCOPE_LOCK
 #include "utils/dummy_logger.h"     // dummy_log
@@ -35,10 +37,18 @@ namespace scheduler
 {
 Scheduler::Scheduler(
         const Duration & granularity ):
+        log_id_( 0 ),
         granularity_( granularity ),
         should_run_( false ),
         has_next_exec_time_( false )
 {
+}
+
+bool Scheduler::init_log( unsigned int log_id )
+{
+    log_id_ = log_id;
+
+    return true;
 }
 
 void Scheduler::run()
@@ -111,6 +121,8 @@ void Scheduler::iterate_and_collect( VectJob * jobs, const Time & curr_time )
 
         auto & job_ids = it->second;
 
+        dummy_log_debug( log_id_, "iterate_and_collect: time %s jobs %u", to_string( next_exec_time_ ).c_str(), job_ids.size() );
+
         collect_and_postprocess_jobs( jobs, next_exec_time_, job_ids );
 
         events_.erase( it );
@@ -164,6 +176,11 @@ void Scheduler::post_invoke( const Time & exec_time, job_id_t job_id, IJob & job
 
 void Scheduler::invoke_jobs( VectJob & jobs )
 {
+    if( jobs.empty() == false )
+    {
+        dummy_log_trace( log_id_, "invoke_jobs: jobs %u", jobs.size() );
+    }
+
     for( auto & e : jobs )
     {
         e->invoke();
